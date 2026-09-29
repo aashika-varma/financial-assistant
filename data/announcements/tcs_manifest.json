@@ -1,0 +1,74 @@
+{
+  "processed_at": "2026-09-29T03:09:55.478997+00:00",
+  "symbols": [
+    "TCS"
+  ],
+  "start_date": "2026-09-21",
+  "end_date": "2026-09-25",
+  "announcements": [
+    {
+      "symbol": "TCS",
+      "company_name": "Tata Consultancy Services Limited",
+      "subject": "Record Date",
+      "details": "Tata Consultancy Services Limited has informed the Exchange that Record date for the purpose of Dividend  is 14-Oct-2026.",
+      "published_at": "2026-09-22T18:27:02+05:30",
+      "attachment_url": "https://nsearchives.nseindia.com/corporate/TCS_CORPCS_22092026182548_Pre_Board_meeting_intimation_signed.pdf",
+      "source": "nse_announcements_csv",
+      "source_file": "CF-AN-equities-TCS-29-Sep-2026.csv",
+      "source_row": 5,
+      "document_status": "downloaded",
+      "local_path": "data/announcements/pdfs/6442839386265f09135ec5d3589dc88677f2b116592653fa22772878a6fcb1d0.pdf",
+      "document_sha256": "6442839386265f09135ec5d3589dc88677f2b116592653fa22772878a6fcb1d0",
+      "page_count": 2,
+      "size_bytes": 296178
+    },
+    {
+      "symbol": "TCS",
+      "company_name": "Tata Consultancy Services Limited",
+      "subject": "Updates",
+      "details": "Tata Consultancy Services Limited has informed the Exchange regarding 'Press Release - TCS renews title partnership with Jaguar TCS Racing and expands role as official AI partner ahead of Formula E's GEN4 era'.",
+      "published_at": "2026-09-23T13:30:16+05:30",
+      "attachment_url": "https://nsearchives.nseindia.com/corporate/TCS_CORPCS_23092026132301_PR_23Sep26_signed.pdf",
+      "source": "nse_announcements_csv",
+      "source_file": "CF-AN-equities-TCS-29-Sep-2026.csv",
+      "source_row": 4,
+      "document_status": "downloaded",
+      "local_path": "data/announcements/pdfs/75c7193957011cda83ed3f338968681121230a22b2258fd287f2bcebfa81cda9.pdf",
+      "document_sha256": "75c7193957011cda83ed3f338968681121230a22b2258fd287f2bcebfa81cda9",
+      "page_count": 5,
+      "size_bytes": 586861
+    },
+    {
+      "symbol": "TCS",
+      "company_name": "Tata Consultancy Services Limited",
+      "subject": "Copy of Newspaper Publication",
+      "details": "Tata Consultancy Services Limited has informed the Exchange about Copy of Newspaper Publication",
+      "published_at": "2026-09-24T18:43:10+05:30",
+      "attachment_url": "https://nsearchives.nseindia.com/corporate/TCS_CORPCS_24092026184057_SE_Intimation_24092026.pdf",
+      "source": "nse_announcements_csv",
+      "source_file": "CF-AN-equities-TCS-29-Sep-2026.csv",
+      "source_row": 3,
+      "document_status": "downloaded",
+      "local_path": "data/announcements/pdfs/4e29fe8f568e9416ab6e214b9d0361f005a8f9492fb75b455b57604a12aea5d5.pdf",
+      "document_sha256": "4e29fe8f568e9416ab6e214b9d0361f005a8f9492fb75b455b57604a12aea5d5",
+      "page_count": 4,
+      "size_bytes": 819654
+    },
+    {
+      "symbol": "TCS",
+      "company_name": "Tata Consultancy Services Limited",
+      "subject": "Copy of Newspaper Publication",
+      "details": "Tata Consultancy Services Limited has informed the Exchange about Copy of Newspaper Publication",
+      "published_at": "2026-09-25T17:23:14+05:30",
+      "attachment_url": "https://nsearchives.nseindia.com/corporate/TCS_CORPCS_25092026172243_SEInt25092026_signed.pdf",
+      "source": "nse_announcements_csv",
+      "source_file": "CF-AN-equities-TCS-29-Sep-2026.csv",
+      "source_row": 2,
+      "document_status": "downloaded",
+      "local_path": "data/announcements/pdfs/f35b498e32c47f07467539ca9d89757c64b4ed88219dd642d1fded5433d94f3a.pdf",
+      "document_sha256": "f35b498e32c47f07467539ca9d89757c64b4ed88219dd642d1fded5433d94f3a",
+      "page_count": 4,
+      "size_bytes": 493498
+    }
+  ]
+}

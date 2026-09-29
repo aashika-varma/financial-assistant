@@ -1,0 +1,86 @@
+{
+  "source": "samco_downloaded_nse_bhavcopy",
+  "source_file": "2026-09-25-2026-09-25.zip",
+  "ingested_at": "2026-09-28T21:35:29.408219+00:00",
+  "requested_symbols": [
+    "TCS",
+    "INFY",
+    "RELIANCE",
+    "HDFCBANK",
+    "ITC",
+    "LT"
+  ],
+  "date_quality": {
+    "status": "matches_target",
+    "target_session": "2026-09-25",
+    "issues": []
+  },
+  "quotes": [
+    {
+      "symbol": "TCS",
+      "date": "2026-09-25",
+      "open": "2054",
+      "high": "2090.2",
+      "low": "2038.1",
+      "close": "2082",
+      "prev_close": "2087",
+      "pct_change": "-0.24",
+      "volume": 3342195
+    },
+    {
+      "symbol": "INFY",
+      "date": "2026-09-25",
+      "open": "999.5",
+      "high": "1004.2",
+      "low": "991.6",
+      "close": "1000.2",
+      "prev_close": "1014.5",
+      "pct_change": "-1.41",
+      "volume": 10240700
+    },
+    {
+      "symbol": "RELIANCE",
+      "date": "2026-09-25",
+      "open": "1210.5",
+      "high": "1227.4",
+      "low": "1210.5",
+      "close": "1226",
+      "prev_close": "1219.2",
+      "pct_change": "0.56",
+      "volume": 13138735
+    },
+    {
+      "symbol": "HDFCBANK",
+      "date": "2026-09-25",
+      "open": "723",
+      "high": "739.65",
+      "low": "723",
+      "close": "735.6",
+      "prev_close": "728.9",
+      "pct_change": "0.92",
+      "volume": 19853034
+    },
+    {
+      "symbol": "ITC",
+      "date": "2026-09-25",
+      "open": "268.1",
+      "high": "269",
+      "low": "266.3",
+      "close": "269",
+      "prev_close": "268",
+      "pct_change": "0.37",
+      "volume": 6240148
+    },
+    {
+      "symbol": "LT",
+      "date": "2026-09-25",
+      "open": "3865",
+      "high": "3887.5",
+      "low": "3842.4",
+      "close": "3876.2",
+      "prev_close": "3858.4",
+      "pct_change": "0.46",
+      "volume": 1230579
+    }
+  ]
+}
