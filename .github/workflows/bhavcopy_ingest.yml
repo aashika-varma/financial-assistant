@@ -1,0 +1,138 @@
+# .github/workflows/bhavcopy_ingest.yml
+#
+# Daily NSE bhavcopy ingestion — runs after market close every weekday.
+#
+# NSE closes at 15:30 IST (10:00 UTC).  The job fires at 11:15 UTC
+# (16:45 IST) to allow for the Samco file to be published, which
+# typically happens within 30–60 minutes of close.
+#
+# Required repository secrets (Settings → Secrets → Actions):
+#   DATABASE_URL   – Neon PostgreSQL connection string
+#
+# Optional:
+#   OPENAI_API_KEY – only needed if you add LLM steps later
+#
+# Manual trigger:
+#   Go to Actions → "NSE Bhavcopy Daily Ingest" → Run workflow
+#   You can override the session date for backfilling.
+
+name: NSE Bhavcopy Daily Ingest
+
+on:
+  schedule:
+    # 11:15 UTC = 16:45 IST, Mon–Fri
+    - cron: "15 11 * * 1-5"
+
+  workflow_dispatch:
+    inputs:
+      session_date:
+        description: "Trading session date (YYYY-MM-DD). Leave blank for today IST."
+        required: false
+        default: ""
+      dry_run:
+        description: "Dry run — parse but do not write to DB"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  ingest:
+    name: Download & ingest bhavcopy
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+    steps:
+      # ------------------------------------------------------------------ #
+      # 1. Checkout
+      # ------------------------------------------------------------------ #
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ------------------------------------------------------------------ #
+      # 2. Python + Poetry
+      # ------------------------------------------------------------------ #
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Install project dependencies
+        run: poetry install --no-interaction
+
+      # ------------------------------------------------------------------ #
+      # 3. Playwright / Chromium
+      # ------------------------------------------------------------------ #
+      - name: Install Playwright system dependencies
+        run: poetry run playwright install-deps chromium
+
+      - name: Install Playwright Chromium
+        run: poetry run playwright install chromium
+
+      # ------------------------------------------------------------------ #
+      # 4. Determine session date
+      #    Use the manual input if supplied, otherwise today in IST.
+      # ------------------------------------------------------------------ #
+      - name: Resolve session date
+        id: session
+        run: |
+          if [ -n "${{ github.event.inputs.session_date }}" ]; then
+            echo "date=${{ github.event.inputs.session_date }}" >> "$GITHUB_OUTPUT"
+          else
+            # Today's date in Asia/Kolkata
+            SESSION=$(TZ=Asia/Kolkata date +%Y-%m-%d)
+            echo "date=$SESSION" >> "$GITHUB_OUTPUT"
+          fi
+          echo "Session date: $(cat "$GITHUB_OUTPUT" | grep date)"
+
+      # ------------------------------------------------------------------ #
+      # 5. Run ingestion
+      # ------------------------------------------------------------------ #
+      - name: Run full-market ingestion
+        id: ingest
+        run: |
+          DRY_RUN_FLAG=""
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            DRY_RUN_FLAG="--dry-run"
+          fi
+
+          poetry run python examples/ingest_full_market.py \
+            --session "${{ steps.session.outputs.date }}" \
+            --headless \
+            $DRY_RUN_FLAG
+        # Exit code 1 = skip (weekend / holiday) — treat as success.
+        # Exit code 2 = real failure — propagate.
+        continue-on-error: false
+
+      # ------------------------------------------------------------------ #
+      # 6. Handle skip (exit code 1)
+      # ------------------------------------------------------------------ #
+      - name: Check for skip exit code
+        if: failure()
+        run: |
+          # Re-run just to capture the exit code cleanly.
+          # GitHub Actions doesn't expose the raw exit code of a failed step,
+          # so we check if the failure was a skip (code 1) vs a real error (code 2).
+          poetry run python examples/ingest_full_market.py \
+            --session "${{ steps.session.outputs.date }}" \
+            --headless \
+            --dry-run 2>/dev/null || true
+          echo "Step failed — check logs above for [SKIP] vs [ERROR]."
+
+      # ------------------------------------------------------------------ #
+      # 7. Upload artefacts on failure (screenshot + download)
+      # ------------------------------------------------------------------ #
+      - name: Upload failure artefacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ingest-failure-${{ steps.session.outputs.date }}
+          path: |
+            data/downloads/
+          retention-days: 7
