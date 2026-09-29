@@ -1,0 +1,12 @@
+llm:
+  model: "gpt-4o"
+  timeout_seconds: 60
+  max_retries: 2
+
+investment_brief:
+  timeout_seconds: 180
+  recursion_limit: 30
+  model_call_limit: null
+  tool_call_limit: null
+
+
