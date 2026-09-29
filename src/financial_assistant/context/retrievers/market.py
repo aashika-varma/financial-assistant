@@ -1,4 +1,5 @@
-from datetime import date
+from datetime import date, timedelta
+from decimal import Decimal
 
 from psycopg.rows import dict_row
 
@@ -70,3 +71,54 @@ def get_market_quotes(
         )
 
     return [quotes_by_symbol[symbol] for symbol in requested]
+
+
+def get_52_week_range(
+    symbols: list[str],
+    as_of: date,
+    source: str,
+) -> dict[str, dict]:
+    """Compute 52-week high/low for each symbol from stored daily_quotes.
+
+    Uses up to 365 calendar days of data ending on as_of (inclusive).
+    Returns {symbol: {week52_high, week52_low, days_of_data}} for each
+    symbol that has at least one stored row in the window.
+    Symbols with no data are omitted from the result.
+    """
+    if not symbols:
+        return {}
+
+    start = as_of - timedelta(days=365)
+
+    with get_connection() as connection:
+        with connection.cursor(row_factory=dict_row) as cursor:
+            cursor.execute(
+                """
+                SELECT
+                    i.symbol,
+                    MAX(q.high)          AS week52_high,
+                    MIN(q.low)           AS week52_low,
+                    COUNT(q.trading_date) AS days_of_data
+                FROM daily_quotes AS q
+                JOIN instruments AS i
+                    ON i.instrument_id = q.instrument_id
+                WHERE i.exchange = 'NSE'
+                  AND i.series = 'EQ'
+                  AND i.symbol = ANY(%s)
+                  AND q.trading_date >= %s
+                  AND q.trading_date <= %s
+                  AND q.source = %s
+                GROUP BY i.symbol
+                """,
+                (symbols, start, as_of, source),
+            )
+            rows = cursor.fetchall()
+
+    return {
+        row["symbol"]: {
+            "week52_high": row["week52_high"],
+            "week52_low": row["week52_low"],
+            "days_of_data": row["days_of_data"],
+        }
+        for row in rows
+    }

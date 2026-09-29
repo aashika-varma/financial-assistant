@@ -27,6 +27,8 @@ def make_parser():
     parser.add_argument('--holdings-as-of', type=date.fromisoformat,
                         help='Optional portfolio cutoff; defaults to today in India')
     parser.add_argument('--rss', action='store_true', help='Enable stored RSS summaries')
+    parser.add_argument('--web-search', action='store_true', dest='web_search',
+                        help='Enable live Tavily web search (requires TAVILY_API_KEY)')
     parser.add_argument('--once', action='store_true', help='Generate one brief and exit')
     return parser
 
@@ -35,11 +37,12 @@ def status(args, output):
     cutoff = args.holdings_as_of or datetime.now(ZoneInfo('Asia/Kolkata')).date()
     output(f'User: {args.user_id} | Price session: {args.session} | Portfolio cutoff: {cutoff}')
     output('Prices: stored Neon data | RSS: ' + ('enabled (stored snapshots)' if args.rss else 'disabled'))
-    output('Live web news: not connected. This CLI does not ingest or refresh source data.')
+    output('Live web search: ' + ('enabled (Tavily)' if args.web_search else 'disabled') +
+           ' | This CLI does not ingest or refresh source data.')
 
 
 async def run(args, *, input_fn=input, output=print, service=None, portfolio_loader=load_portfolio):
-    service = service or BriefService(rss_enabled=args.rss)
+    service = service or BriefService(rss_enabled=args.rss, web_search_enabled=args.web_search)
     status(args, output)
     if not args.once:
         output(HELP)

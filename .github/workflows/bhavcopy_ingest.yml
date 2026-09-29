@@ -1,16 +1,19 @@
 # .github/workflows/bhavcopy_ingest.yml
 #
-# Daily NSE bhavcopy ingestion — runs after market close every weekday.
+# Daily NSE bhavcopy ingestion + Google News RSS ingestion.
 #
-# NSE closes at 15:30 IST (10:00 UTC).  The job fires at 11:15 UTC
+# NSE closes at 15:30 IST (10:00 UTC).  The bhavcopy job fires at 11:15 UTC
 # (16:45 IST) to allow for the Samco file to be published, which
 # typically happens within 30–60 minutes of close.
+# The news ingestion job fires at 02:00 UTC (07:30 IST) daily — after
+# overnight news is settled and before the user runs a morning brief.
 #
 # Required repository secrets (Settings → Secrets → Actions):
 #   DATABASE_URL   – Neon PostgreSQL connection string
 #
 # Optional:
 #   OPENAI_API_KEY – only needed if you add LLM steps later
+#   TAVILY_API_KEY – not needed for this workflow (used at runtime by the CLI)
 #
 # Manual trigger:
 #   Go to Actions → "NSE Bhavcopy Daily Ingest" → Run workflow
@@ -20,8 +23,10 @@ name: NSE Bhavcopy Daily Ingest
 
 on:
   schedule:
-    # 11:15 UTC = 16:45 IST, Mon–Fri
+    # 11:15 UTC = 16:45 IST, Mon–Fri  →  bhavcopy ingestion
     - cron: "15 11 * * 1-5"
+    # 02:00 UTC = 07:30 IST, daily   →  Google News RSS ingestion
+    - cron: "0 2 * * *"
 
   workflow_dispatch:
     inputs:
@@ -31,6 +36,11 @@ on:
         default: ""
       dry_run:
         description: "Dry run — parse but do not write to DB"
+        required: false
+        type: boolean
+        default: false
+      run_news:
+        description: "Also run news ingestion in this manual trigger"
         required: false
         type: boolean
         default: false
@@ -136,3 +146,60 @@ jobs:
           path: |
             data/downloads/
           retention-days: 7
+
+  # ======================================================================== #
+  # NEWS INGESTION JOB
+  # Runs daily at 02:00 UTC (07:30 IST) via cron, or on manual trigger when
+  # run_news=true.  Does NOT need Playwright — pure HTTP via feedparser.
+  # Fetches Google News RSS only for symbols in the confirmed portfolio.
+  # ======================================================================== #
+  ingest_news:
+    name: Ingest Google News RSS for portfolio
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # Run on the 02:00 UTC schedule OR on manual dispatch with run_news=true.
+    # The bhavcopy cron fires at 11:15 UTC — this condition excludes it.
+    if: |
+      (github.event_name == 'schedule' && github.event.schedule == '0 2 * * *') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.run_news == 'true')
+
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+    steps:
+      # ------------------------------------------------------------------ #
+      # 1. Checkout
+      # ------------------------------------------------------------------ #
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ------------------------------------------------------------------ #
+      # 2. Python + Poetry (no Playwright needed for RSS)
+      # ------------------------------------------------------------------ #
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Install project dependencies
+        run: poetry install --no-interaction --without dev
+
+      # ------------------------------------------------------------------ #
+      # 3. Run news ingestion for the demo user's portfolio
+      # ------------------------------------------------------------------ #
+      - name: Ingest Google News RSS
+        run: |
+          DRY_RUN_FLAG=""
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            DRY_RUN_FLAG="--dry-run"
+          fi
+
+          poetry run python examples/ingest_news_rss.py \
+            --user-id demo_user \
+            --max-entries 10 \
+            $DRY_RUN_FLAG
